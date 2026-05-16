@@ -1,0 +1,61 @@
+<div class="sidebar">
+  <!-- User info -->
+  <div class="sidebar-user glass-panel">
+    <img *ngIf="picture" [src]="picture" class="avatar-img" alt="Profile" referrerpolicy="no-referrer">
+    <div *ngIf="!picture" class="avatar">{{ username.charAt(0).toUpperCase() }}</div>
+    <div>
+      <div class="username">{{ username }}</div>
+      <div class="role">Interview Trainee</div>
+    </div>
+  </div>
+
+  <!-- Projects & Folders -->
+  <div class="sidebar-section">
+    <div class="section-header">
+      <span>📁 Projects</span>
+      <button class="icon-btn" (click)="showNewProject = !showNewProject" title="New Project">+</button>
+    </div>
+
+    <div class="new-project-form" *ngIf="showNewProject">
+      <input type="text" [(ngModel)]="newProjectName" placeholder="Project name..." (keyup.enter)="createProject()">
+      <button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" (click)="createProject()">Create</button>
+    </div>
+
+    <div class="project-list">
+      <div *ngFor="let project of projects" class="project-item" [class.active]="activeProjectId === project.id">
+        <div class="project-header" (click)="toggleProject(project.id)">
+          <span>{{ expandedProjects[project.id] ? '▼' : '▶' }} {{ project.name }}</span>
+        </div>
+
+        <!-- Folders inside project -->
+        <div class="folder-list" *ngIf="expandedProjects[project.id]">
+          <div *ngFor="let folder of foldersByProject[project.id]"
+               class="folder-item"
+               [class.active]="activeFolderId === folder.id"
+               (click)="selectFolder(folder)">
+            📂 {{ folder.name }}
+          </div>
+
+          <!-- New folder form -->
+          <div class="new-folder-form" *ngIf="expandedProjects[project.id]">
+            <input type="text"
+                   [(ngModel)]="newFolderNames[project.id]"
+                   placeholder="New folder..."
+                   (keyup.enter)="createFolder(project.id)">
+            <span class="add-folder-btn" (click)="createFolder(project.id)">+ Add</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation links -->
+  <nav class="sidebar-nav">
+    <a routerLink="/dashboard" routerLinkActive="active">📊 Dashboard</a>
+    <a routerLink="/upload" routerLinkActive="active">☁️ Upload</a>
+    <a routerLink="/interview" routerLinkActive="active">🎤 Interview</a>
+    <a routerLink="/feedback" routerLinkActive="active">📈 Feedback</a>
+  </nav>
+
+  <button class="logout-btn" (click)="logout()">🚪 Logout</button>
+</div>

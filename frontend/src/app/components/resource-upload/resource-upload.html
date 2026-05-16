@@ -1,0 +1,53 @@
+<div class="glass-panel upload-panel">
+  <h2>☁️ Upload Study Materials</h2>
+  <p>Drop PDFs, text files, or entire folders — they'll be indexed for your AI session.</p>
+
+  <!-- Drop Zone -->
+  <div class="drop-zone"
+       [class.dragover]="isDragging"
+       (dragover)="onDragOver($event)"
+       (dragleave)="isDragging = false"
+       (drop)="onDrop($event)"
+       (click)="fileInput.click()">
+    <input #fileInput type="file" multiple accept=".pdf,.txt,.md" style="display:none" (change)="onFilesSelected($event)">
+    <div class="drop-zone-folder-input" (click)="$event.stopPropagation()">
+      <input #folderInput type="file" multiple style="display:none"
+             (change)="onFilesSelected($event)"
+             webkitdirectory>
+    </div>
+    <h1 style="font-size: 3.5rem;">📂</h1>
+    <h3>Drag & Drop files or folders here</h3>
+    <p>PDFs, TXT, Markdown supported</p>
+    <div style="display: flex; gap: 1rem; margin-top: 1rem;" (click)="$event.stopPropagation()">
+      <button class="btn-primary" (click)="fileInput.click()">Select Files</button>
+      <button class="btn-primary" style="background: #7c3aed;" (click)="folderInput.click()">Select Folder</button>
+    </div>
+  </div>
+
+  <!-- Selected Files Preview -->
+  <div class="file-list" *ngIf="selectedFiles.length > 0">
+    <h3 style="margin-bottom: 1rem;">📋 Selected ({{ selectedFiles.length }} files)</h3>
+    <div class="file-chip" *ngFor="let f of selectedFiles">
+      <span>{{ f.name.endsWith('.pdf') ? '📄' : '📝' }} {{ f.name }}</span>
+      <span style="color: var(--text-secondary); font-size: 0.8rem;">{{ (f.size / 1024).toFixed(1) }} KB</span>
+    </div>
+  </div>
+
+  <!-- YouTube Link -->
+  <div class="divider"><span>OR</span></div>
+  <div style="display: flex; gap: 1rem;">
+    <input type="text" [(ngModel)]="youtubeUrl" placeholder="Paste YouTube Playlist link..." class="link-input">
+    <button class="btn-primary" (click)="addYoutubeLink()">Import</button>
+  </div>
+
+  <!-- Upload Button -->
+  <div style="margin-top: 2rem; text-align: right;" *ngIf="selectedFiles.length > 0">
+    <div class="error-msg" *ngIf="errorMsg">{{ errorMsg }}</div>
+    <button class="btn-primary" [disabled]="uploading" (click)="uploadFiles()" style="padding: 1rem 3rem;">
+      {{ uploading ? 'Uploading & Embedding...' : 'Upload & Index for RAG ✨' }}
+    </button>
+  </div>
+
+  <!-- Success -->
+  <div class="success-msg" *ngIf="successMsg">✅ {{ successMsg }}</div>
+</div>

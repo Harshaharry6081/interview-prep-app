@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: interview-agent
+data:
+  chroma-host: "http://chromadb-service:8000"
+  spring-app-name: "interview-agent-backend"

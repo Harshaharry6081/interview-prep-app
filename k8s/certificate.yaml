@@ -1,0 +1,8 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: interview-agent-cert
+  namespace: interview-agent
+spec:
+  domains:
+    - interview-prep-app.duckdns.org

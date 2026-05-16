@@ -1,0 +1,44 @@
+<div class="glass-panel">
+  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; margin-bottom: 2rem;">
+    <h2>📈 Multi-Agent Feedback Report</h2>
+    <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold;">Final Score: 8.2 / 10</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    
+    <!-- Technical Agent Feedback -->
+    <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border-left: 4px solid #3b82f6;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+        <h3>🛠️ Technical Agent</h3>
+        <span style="color: #3b82f6; font-weight: bold;">8.5 / 10</span>
+      </div>
+      <p style="margin-bottom: 1rem;"><strong>Feedback:</strong> Strong understanding of system design fundamentals. Your explanation of load balancing was spot on.</p>
+      <p style="color: #fca5a5;"><strong>Action Item:</strong> Review CAP Theorem edge cases.</p>
+    </div>
+
+    <!-- Communication Agent Feedback -->
+    <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border-left: 4px solid #f43f5e;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+        <h3>🗣️ Communication Agent</h3>
+        <span style="color: #f43f5e; font-weight: bold;">7.5 / 10</span>
+      </div>
+      <p style="margin-bottom: 1rem;"><strong>Feedback:</strong> You articulate ideas well, but tend to rush through complex explanations.</p>
+      <p style="color: #fca5a5;"><strong>Action Item:</strong> Pause after answering to let the interviewer interject.</p>
+    </div>
+
+    <!-- Confidence Agent Feedback -->
+    <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border-left: 4px solid #eab308;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+        <h3>✨ Confidence Agent</h3>
+        <span style="color: #eab308; font-weight: bold;">9.0 / 10</span>
+      </div>
+      <p style="margin-bottom: 1rem;"><strong>Feedback:</strong> Excellent use of tone and filler-word reduction. You sound like a senior engineer.</p>
+      <p style="color: #86efac;"><strong>Action Item:</strong> Keep doing what you're doing!</p>
+    </div>
+
+  </div>
+
+  <div style="margin-top: 3rem; text-align: center;">
+    <button class="btn-primary" style="padding: 1rem 3rem; font-size: 1.2rem;">Generate PDF Report</button>
+  </div>
+</div>

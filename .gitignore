@@ -1,0 +1,28 @@
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+dist/
+.angular/
+
+# Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Environment
+.env
+.env.*
+
+# Application Data
+.gemini/

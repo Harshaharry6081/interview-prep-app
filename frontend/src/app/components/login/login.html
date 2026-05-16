@@ -1,0 +1,45 @@
+<div class="auth-container">
+  <div class="auth-bg-glow"></div>
+
+  <div class="auth-card glass-panel">
+    <!-- Logo & Branding -->
+    <div class="auth-logo">🎯</div>
+    <h1>Interview Agent</h1>
+    <p class="auth-subtitle">AI-powered interview training with multi-agent analysis</p>
+
+    <!-- Feature highlights -->
+    <div class="features">
+      <div class="feature-chip">🧠 RAG-powered questions</div>
+      <div class="feature-chip">🤖 Multi-agent feedback</div>
+      <div class="feature-chip">📈 Progress tracking</div>
+    </div>
+
+    <div class="divider"><span>Sign in to get started</span></div>
+
+    <!-- Google Sign-In Button renders here -->
+    <div class="google-btn-wrapper">
+      <div #googleBtn id="google-signin-btn"></div>
+    </div>
+
+    <div class="divider"><span>OR TEST USER</span></div>
+
+    <!-- Test User Login Form -->
+    <div class="test-login-form">
+      <input type="text" [(ngModel)]="testUsername" placeholder="Username" class="test-input">
+      <input type="password" [(ngModel)]="testPassword" placeholder="Password" class="test-input">
+      <button (click)="testLogin()" class="test-btn">Sign in as Test User</button>
+    </div>
+
+    <div class="error-msg" *ngIf="errorMsg">⚠️ {{ errorMsg }}</div>
+
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Signing you in...</span>
+    </div>
+
+    <p class="auth-footer">
+      By signing in, you agree to our Terms of Service.<br>
+      Your data is used only to improve your interview training.
+    </p>
+  </div>
+</div>
