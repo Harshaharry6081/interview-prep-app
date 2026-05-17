@@ -35,6 +35,11 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: chroma-host
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: gemini-api-key
           readinessProbe:
             httpGet:
               path: /api/health

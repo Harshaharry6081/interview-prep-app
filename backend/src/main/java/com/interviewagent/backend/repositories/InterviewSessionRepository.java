@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface InterviewSessionRepository extends MongoRepository<InterviewSession, String> {
     List<InterviewSession> findByUserId(String userId);
+    List<InterviewSession> findByUserIdOrderByStartedAtDesc(String userId);
 }

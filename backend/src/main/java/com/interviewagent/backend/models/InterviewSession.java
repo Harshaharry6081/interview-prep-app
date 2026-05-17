@@ -19,12 +19,15 @@ public class InterviewSession {
     private String id;
     private String userId;
     private String topic;
+    private String interviewGroup; // SYSTEM_DESIGN, BACKEND, FRONTEND, HR, DSA
+    private String difficulty;     // EASY, MEDIUM, HARD
     private List<ChatMessage> transcript;
     private List<AgentFeedback> agentFeedbacks;
     private String finalAssessment;
+    private Double overallScore;
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
-    
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

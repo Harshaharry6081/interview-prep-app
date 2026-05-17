@@ -1,37 +1,132 @@
-<div style="display: flex; gap: 2rem; height: 75vh;">
-  <!-- Left Side: Agent Video/Avatar -->
-  <div class="glass-panel" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(192, 132, 252, 0.1) 100%);">
-    <div style="width: 200px; height: 200px; border-radius: 50%; background: var(--bg-dark); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 30px rgba(99, 102, 241, 0.5); position: relative;">
-      <h1 style="font-size: 5rem; margin: 0;">🤖</h1>
-      <!-- Pulsing ring animation simulation using inline styles for demo -->
-      <div style="position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px; border: 2px solid var(--accent-color); border-radius: 50%; animation: pulse 2s infinite; opacity: 0.5;"></div>
+<!-- Starting state -->
+<div class="interview-page" *ngIf="isStarting">
+  <div class="starting-screen glass-panel">
+    <div class="ai-avatar pulsing">🤖</div>
+    <h2>Connecting to AI Interviewer...</h2>
+    <p>Setting up your <strong>{{ topic }}</strong> interview ({{ difficulty }})</p>
+    <div class="spinner-large"></div>
+  </div>
+</div>
+
+<!-- Error state -->
+<div class="interview-page" *ngIf="error && !isStarting && !session">
+  <div class="error-screen glass-panel">
+    <span style="font-size:3rem">⚠️</span>
+    <h2>Something went wrong</h2>
+    <p>{{ error }}</p>
+    <button class="btn-primary" (click)="goToSpaces()">← Back to Spaces</button>
+  </div>
+</div>
+
+<!-- Active / Ended Interview -->
+<div class="interview-page" *ngIf="!isStarting && session">
+
+  <!-- Header bar -->
+  <div class="interview-header glass-panel">
+    <div class="header-left">
+      <div class="group-badge">{{ topic }}</div>
+      <span class="diff-badge" [class]="'diff-' + difficulty.toLowerCase()">{{ difficulty }}</span>
     </div>
-    <h3 style="margin-top: 2rem; color: #fff;">Senior Systems Engineer</h3>
-    <p style="color: #4ade80;">Listening...</p>
+    <div class="header-center">
+      <div class="ai-avatar-sm" [class.speaking]="isSending">🤖</div>
+      <span>{{ isEnded ? 'Interview Complete' : 'Live Interview' }}</span>
+    </div>
+    <div class="header-right">
+      <span *ngIf="overallScore" class="score-badge" [style.color]="scoreColor">
+        Score: {{ overallScore }}/10
+      </span>
+      <button *ngIf="!isEnded" class="end-btn" (click)="endSession()" [disabled]="isLoading">
+        {{ isLoading ? 'Finishing...' : '⏹ End Interview' }}
+      </button>
+      <button *ngIf="isEnded" class="btn-primary" (click)="goToSpaces()">← New Interview</button>
+    </div>
   </div>
 
-  <!-- Right Side: Chat Transcript -->
-  <div class="glass-panel" style="flex: 2; display: flex; flex-direction: column;">
-    <h2 style="border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; margin-bottom: 1rem;">Live Transcript</h2>
-    
-    <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;">
-      <div style="background: rgba(99, 102, 241, 0.2); padding: 1rem; border-radius: 12px 12px 12px 0; max-width: 80%;">
-        <strong>AI:</strong> Welcome! Let's start with a basic question. Can you explain the difference between horizontal and vertical scaling?
-      </div>
-      
-      <div style="background: rgba(255, 255, 255, 0.1); padding: 1rem; border-radius: 12px 12px 0 12px; max-width: 80%; align-self: flex-end;">
-        <strong>You:</strong> Vertical scaling means adding more power like CPU or RAM to an existing machine. Horizontal scaling means adding more machines to the pool of resources.
+  <div class="interview-body">
+
+    <!-- Left: Transcript -->
+    <div class="transcript-panel glass-panel">
+      <div class="transcript-scroll">
+        <div *ngFor="let msg of session.transcript" class="message-row" [class.user]="msg.role === 'USER'">
+          <div class="msg-bubble" [class.ai-bubble]="msg.role === 'AI_INTERVIEWER'" [class.user-bubble]="msg.role === 'USER'">
+            <div class="msg-role">{{ msg.role === 'AI_INTERVIEWER' ? '🤖 Interviewer' : '👤 You' }}</div>
+            <div class="msg-content">{{ msg.content }}</div>
+          </div>
+        </div>
+
+        <!-- Thinking indicator -->
+        <div class="message-row" *ngIf="isSending">
+          <div class="msg-bubble ai-bubble thinking">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Final Assessment -->
+        <div *ngIf="isEnded && session.finalAssessment" class="assessment-block glass-panel">
+          <h3>📋 Final Assessment</h3>
+          <p>{{ session.finalAssessment }}</p>
+          <div *ngIf="overallScore" class="final-score" [style.color]="scoreColor">
+            Overall Score: {{ overallScore }}/10
+          </div>
+        </div>
+
+        <div #transcriptEnd></div>
       </div>
 
-      <div style="background: rgba(99, 102, 241, 0.2); padding: 1rem; border-radius: 12px 12px 12px 0; max-width: 80%;">
-        <strong>AI:</strong> That's correct. In the context of a microservices architecture, which scaling approach is more commonly used and why?
+      <!-- Input area -->
+      <div class="input-area" *ngIf="!isEnded">
+        <textarea
+          [(ngModel)]="userInput"
+          placeholder="Type your answer... (Enter to send, Shift+Enter for new line)"
+          (keydown)="handleKeyDown($event)"
+          [disabled]="isSending"
+          rows="3"></textarea>
+        <button class="send-btn btn-primary" (click)="sendMessage()" [disabled]="isSending || !userInput.trim()">
+          <span *ngIf="!isSending">Send ➤</span>
+          <span *ngIf="isSending">...</span>
+        </button>
       </div>
     </div>
 
-    <div style="margin-top: 1rem; display: flex; gap: 1rem;">
-      <input type="text" placeholder="Type your response or use voice..." style="flex: 1; padding: 1rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; font-family: inherit;">
-      <button class="btn-primary" style="display: flex; align-items: center; gap: 0.5rem;">🎤 Speak</button>
-      <button class="btn-primary" style="background: #10b981;">Send</button>
+    <!-- Right: Agent Feedback -->
+    <div class="feedback-panel">
+
+      <!-- Session info -->
+      <div class="info-card glass-panel">
+        <h4>📊 Session Info</h4>
+        <div class="info-row"><span>Domain</span><strong>{{ session.interviewGroup }}</strong></div>
+        <div class="info-row"><span>Difficulty</span><strong>{{ session.difficulty }}</strong></div>
+        <div class="info-row"><span>Messages</span><strong>{{ session.transcript.length }}</strong></div>
+        <div class="info-row" *ngIf="overallScore">
+          <span>Current Score</span>
+          <strong [style.color]="scoreColor">{{ overallScore }}/10</strong>
+        </div>
+      </div>
+
+      <!-- Agent feedback cards -->
+      <div *ngIf="showFeedback && lastFeedbacks.length > 0" class="agents-section">
+        <h4>🧠 Agent Analysis</h4>
+        <div *ngFor="let agent of lastFeedbacks" class="agent-card glass-panel">
+          <div class="agent-header">
+            <span class="agent-name">{{ agent.agentName }}</span>
+            <span class="agent-score" [style.color]="agent.score >= 8 ? '#4ade80' : agent.score >= 6 ? '#facc15' : '#f87171'">
+              {{ agent.score }}/10
+            </span>
+          </div>
+          <div class="score-bar">
+            <div class="score-fill" [style.width]="(agent.score * 10) + '%'"
+                 [style.background]="agent.score >= 8 ? '#4ade80' : agent.score >= 6 ? '#facc15' : '#f87171'"></div>
+          </div>
+          <p class="agent-feedback">{{ agent.feedback }}</p>
+          <p class="agent-suggestion">💡 {{ agent.suggestions }}</p>
+        </div>
+      </div>
+
+      <!-- Placeholder when no feedback yet -->
+      <div *ngIf="!showFeedback" class="no-feedback glass-panel">
+        <p>🎯 Answer a question to see live agent analysis here.</p>
+      </div>
     </div>
+
   </div>
 </div>

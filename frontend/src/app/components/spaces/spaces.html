@@ -1,0 +1,55 @@
+<div class="spaces-page">
+  <!-- Header -->
+  <div class="spaces-header">
+    <h1>🚀 Interview Spaces</h1>
+    <p class="subtitle">Choose a domain to practice, set your difficulty, and start a live AI-powered mock interview.</p>
+  </div>
+
+  <div *ngIf="error" class="error-banner">⚠️ {{ error }}</div>
+
+  <!-- Group Cards -->
+  <div class="groups-grid" *ngIf="groups.length > 0">
+    <div *ngFor="let group of groups"
+         class="group-card glass-panel"
+         [class.selected]="selectedGroup?.id === group.id"
+         (click)="selectGroup(group)"
+         [style.--group-color]="group.color">
+      <div class="group-icon">{{ group.icon }}</div>
+      <h2 class="group-title">{{ group.title }}</h2>
+      <p class="group-desc">{{ group.description }}</p>
+      <div class="topics-row">
+        <span *ngFor="let topic of group.topics.slice(0,3)" class="topic-chip">{{ topic }}</span>
+        <span *ngIf="group.topics.length > 3" class="topic-chip more">+{{ group.topics.length - 3 }}</span>
+      </div>
+      <div class="select-indicator" *ngIf="selectedGroup?.id === group.id">✓ Selected</div>
+    </div>
+  </div>
+
+  <!-- Loading skeleton -->
+  <div class="groups-grid" *ngIf="groups.length === 0 && !error">
+    <div *ngFor="let i of [1,2,3,4,5,6]" class="group-card glass-panel skeleton"></div>
+  </div>
+
+  <!-- Floating start panel -->
+  <div class="start-panel glass-panel" *ngIf="selectedGroup">
+    <button class="close-btn" (click)="dismiss()">✕</button>
+    <div class="start-left">
+      <span class="start-icon">{{ selectedGroup.icon }}</span>
+      <div>
+        <h3>{{ selectedGroup.title }} Interview</h3>
+        <p>Select difficulty and start your session</p>
+      </div>
+    </div>
+    <div class="difficulty-row">
+      <button *ngFor="let d of difficulties"
+              class="diff-btn"
+              [class.active]="selectedDifficulty === d.value"
+              (click)="selectedDifficulty = d.value">
+        {{ d.icon }} {{ d.label }}
+      </button>
+    </div>
+    <button class="start-btn btn-primary" (click)="startInterview()">
+      🎤 Start Interview
+    </button>
+  </div>
+</div>
