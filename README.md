@@ -1,6 +1,6 @@
 # 🎯 Interview Agent — AI-Powered Interview Preparation Platform
 
-> A production-ready SaaS application deployed on Google Kubernetes Engine (GKE) that conducts **live mock interviews** powered by **Google Gemini AI**, with multi-agent feedback analysis, RAG-powered contextual questions, and real-time performance tracking.
+> A production-ready SaaS application deployed on **Google Cloud Run** that conducts **live mock interviews** powered by **Google Gemini AI**, with multi-agent feedback analysis, RAG-powered contextual questions, and real-time performance tracking.
 
 **Live URL:** https://interview-prep-app.duckdns.org  
 **GitHub:** https://github.com/Harshaharry6081/interview-prep-app
@@ -19,46 +19,38 @@
 │   │ (OAuth)  │  │  (Groups)   │  │  (Live AI Chat)│  │(Real KPIs│  │
 │   └──────────┘  └─────────────┘  └───────────────┘  └──────────┘  │
 └───────────────────────────┬─────────────────────────────────────────┘
-                            │ HTTPS (SSL/TLS - Google Managed Cert)
+                            │ HTTPS (Cloud Run Managed URL)
                             ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│               GOOGLE CLOUD LOAD BALANCER                            │
-│               (Ingress + FrontendConfig - HTTP→HTTPS redirect)      │
-└──────────┬──────────────────────────────────┬───────────────────────┘
-           │ /                                 │ /api/**
-           ▼                                  ▼
-┌─────────────────────┐         ┌───────────────────────────────────┐
-│  FRONTEND POD       │         │  BACKEND POD (Spring Boot 4.x)    │
-│  nginx:alpine       │         │  Java 17 / Tomcat                 │
-│  (Angular built SPA)│         │                                   │
-│                     │         │  Controllers:                     │
-│  Routes:            │         │  ├── AuthController   /api/auth   │
-│  /login             │         │  ├── InterviewCtrl   /api/interview│
-│  /dashboard         │         │  ├── GroupCtrl       /api/groups  │
-│  /spaces            │         │  ├── ResourceCtrl    /api/resources│
-│  /interview         │         │  ├── ProjectCtrl     /api/projects│
-│  /upload            │         │  └── HealthCtrl      /api/health  │
-│  /feedback          │         │                                   │
-└─────────────────────┘         │  Services:                        │
-                                │  ├── MultiAgentOrchestrator ──────┼──►  Google Gemini API
-                                │  │   (Technical Agent)            │      (gemini-1.5-flash)
-                                │  │   (Communication Agent)        │
-                                │  │   (Domain Depth Agent)         │
-                                │  ├── EmbeddingService ────────────┼──►  ChromaDB Pod
-                                │  │   (RAG / Vector Search)        │      (in-cluster)
-                                │  └── DocumentParsingService       │
-                                │       (PDF → text chunks)         │
-                                └────────────┬──────────────────────┘
-                                             │
-                      ┌──────────────────────┼──────────────────────┐
-                      │                      │                      │
-                      ▼                      ▼                      ▼
-           ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-           │   MongoDB Pod   │    │   ChromaDB Pod   │    │  Google Gemini  │
-           │   (StatefulSet) │    │   (StatefulSet)  │    │   API (Cloud)   │
-           │   Persistent    │    │   Vector Store   │    │  gemini-1.5-    │
-           │   Volume (GKE)  │    │   Persistent Vol │    │  flash model    │
-           └─────────────────┘    └──────────────────┘    └─────────────────┘
+│                   GOOGLE CLOUD RUN (FRONTEND)                       │
+│                   (Serves Angular App via Nginx)                    │
+└───────────────────────────┬─────────────────────────────────────────┘
+                            │ /api/** (via API_URL env var)
+                            ▼
+┌───────────────────────────────────────────────────────────────────┐
+│                   GOOGLE CLOUD RUN (BACKEND)                      │
+│                   (Spring Boot 4.x / Java 17)                     │
+│                                                                   │
+│  Controllers:                                                     │
+│  ├── AuthController   /api/auth                                   │
+│  ├── InterviewCtrl   /api/interview                               │
+│  ├── GroupCtrl       /api/groups                                  │
+│  ├── ResourceCtrl    /api/resources                               │
+│  ├── ProjectCtrl     /api/projects                                │
+│  └── HealthCtrl      /api/health                                  │
+│                                                                   │
+│  Services:                                                        │
+│  ├── MultiAgentOrchestrator ────────────────────────┼──► Google Gemini API
+│  ├── EmbeddingService ──────────────────────────────┼──► Managed ChromaDB
+│  └── DocumentParsingService (PDF → text)            │
+└───────────────────────────┬─────────────────────────┴─────────────┘
+                            │
+                      ┌─────┴────────────────┐
+                      ▼                      ▼
+           ┌─────────────────┐    ┌─────────────────┐
+           │  MongoDB Atlas  │    │  Google Gemini  │
+           │  (Managed Cloud)│    │   API (Cloud)   │
+           └─────────────────┘    └─────────────────┘
 ```
 
 ---
@@ -154,21 +146,8 @@ Interview-Prep-App/
 │       └── guards/
 │           └── auth-guard.ts         # Route protection
 │
-├── k8s/                              # Kubernetes manifests
-│   ├── namespace.yaml
-│   ├── secrets.yaml                  # JWT, MongoDB, Gemini API keys
-│   ├── configmap.yaml
-│   ├── ingress.yaml                  # GKE HTTPS Ingress
-│   ├── certificate.yaml              # Google Managed SSL Cert
-│   ├── frontendconfig.yaml           # HTTP→HTTPS redirect
-│   ├── backend/deployment.yaml
-│   ├── frontend/deployment.yaml
-│   ├── mongodb/statefulset.yaml
-│   └── chromadb/statefulset.yaml
-│
 ├── docker-compose.yml               # Local development
-├── cloudbuild.yaml                  # GCP Cloud Build CI
-├── deploy.sh                        # Manual deployment script
+├── deploy-cloudrun.sh               # Cloud Run deployment script
 └── README.md
 ```
 
@@ -208,12 +187,12 @@ Interview-Prep-App/
 | **Frontend** | Angular 17, TypeScript, SCSS |
 | **Backend** | Spring Boot 4.x, Java 17 |
 | **Auth** | Google OAuth 2.0 + JWT |
-| **Database** | MongoDB (GKE StatefulSet + Persistent Volume) |
-| **Vector DB** | ChromaDB (GKE StatefulSet + Persistent Volume) |
-| **Hosting** | GKE Autopilot (us-central1) |
-| **SSL** | Google Managed Certificate |
-| **LB** | Google Cloud HTTPS Load Balancer |
-| **CI/CD** | Cloud Build + kubectl rollout |
+| **Database** | MongoDB (e.g. MongoDB Atlas) |
+| **Vector DB** | Managed Vector Store / ChromaDB |
+| **Hosting** | Google Cloud Run (Serverless) |
+| **SSL** | Cloud Run Managed Certificate |
+| **LB** | Cloud Run Managed Load Balancing |
+| **CI/CD** | Cloud Build + Cloud Run Deploy |
 
 ---
 
@@ -240,39 +219,25 @@ Access at `http://localhost:4200`
 
 ---
 
-## ☁️ GKE Production Deployment
+## ☁️ Google Cloud Run Deployment
 
-### 1. Apply secrets (with your actual keys)
+Deploying the application is automated using the `deploy-cloudrun.sh` script.
+
+### 1. Configure Environment Variables
+Open `deploy-cloudrun.sh` and update the environment variables in Step 5 with your actual connection strings:
+- `YOUR_USER:YOUR_PASS@YOUR_ATLAS_CLUSTER.mongodb.net/interview_agent` (MongoDB Atlas URI)
+- `YOUR_CHROMA_URL` (Managed Vector DB URL)
+- `YOUR_GEMINI_KEY` (Gemini API Key)
+
+### 2. Execute Deployment Script
+Run the deployment script, providing your Google Cloud Project ID as an argument:
 ```bash
-kubectl apply -f k8s/secrets.yaml
+./deploy-cloudrun.sh YOUR_GCP_PROJECT_ID
 ```
-
-### 2. Apply all manifests
-```bash
-kubectl apply -f k8s/namespace.yaml
-kubectl apply -f k8s/configmap.yaml
-kubectl apply -f k8s/secrets.yaml
-kubectl apply -f k8s/certificate.yaml
-kubectl apply -f k8s/frontendconfig.yaml
-kubectl apply -f k8s/mongodb/
-kubectl apply -f k8s/chromadb/
-kubectl apply -f k8s/backend/
-kubectl apply -f k8s/frontend/
-kubectl apply -f k8s/ingress.yaml
-```
-
-### 3. Rebuild & redeploy
-```bash
-# Backend
-docker build -t gcr.io/[PROJECT]/backend ./backend
-docker push gcr.io/[PROJECT]/backend
-kubectl rollout restart deployment/backend -n interview-agent
-
-# Frontend
-docker build -t gcr.io/[PROJECT]/frontend ./frontend
-docker push gcr.io/[PROJECT]/frontend
-kubectl rollout restart deployment/frontend -n interview-agent
-```
+The script will:
+1. Build backend and frontend images using Google Cloud Build.
+2. Deploy the backend to Cloud Run, injecting your environment variables.
+3. Deploy the frontend to Cloud Run, injecting the new backend URL.
 
 ---
 
